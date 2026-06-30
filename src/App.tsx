@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { getHealth } from './pttApi'
+import CruceGPS from './components/CruceGPS'
 import {
   BarChart, Bar, AreaChart, Area,
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
@@ -8,7 +10,7 @@ import {
 const SHEET_ID = '1zMxsyVCKqu6CpZKvqHSx00oFSpy60qFthHuAvMAbe-I'
 const API_KEY = 'AIzaSyAXxwBMvSLn0YpaoTq3J3UOjloiep5yTl4'
 const SHEET_NAME = 'PRUEBAS'
-const REFRESH_INTERVAL = 5 * 60 * 1000 // 5 minutos
+const REFRESH_INTERVAL = 5 * 60 * 1000
 
 const CHART_TYPES = [
   { id: 'bar', label: 'Barras' },
@@ -56,9 +58,21 @@ function App() {
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    getHealth().then(res => console.log('PTT API Health:', res));
+  }, []);
+
   const pruebasFiltradas = pruebas.filter(p => {
-    const fecha = p['Fecha'] || ''
+    const rawFecha = p['Fecha'] || ''
     const pais = p['Pais'] || ''
+
+    // Convertir DD/MM/YYYY a YYYY-MM-DD para comparar
+    let fecha = rawFecha
+    if (rawFecha.includes('/')) {
+      const [day, month, year] = rawFecha.split('/')
+      fecha = `${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`
+    }
+
     if (fechaDesde && fecha < fechaDesde) return false
     if (fechaHasta && fecha > fechaHasta) return false
     if (filtroPais !== 'Todos' && pais !== filtroPais) return false
@@ -355,6 +369,10 @@ function App() {
             </div>
           </>
         )}
+
+        {/* CRUCE GPS */}
+        <CruceGPS />
+
       </div>
 
       {/* MODAL */}
