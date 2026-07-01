@@ -193,7 +193,7 @@ export default function CruceGPS() {
               <tbody>
                 {data.users.map((user, i) => {
                   const s = STATUS_STYLE[user.status]
-                  const hasData = user.total_calls > 0
+                  const hasData = user.total_calls > 0 && (user.matched > 0 || user.mismatched > 0)
                   return (
                     <tr key={user.alias} style={{
                       borderBottom: i < data.users.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
