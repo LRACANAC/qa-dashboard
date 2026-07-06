@@ -43,6 +43,14 @@ function getYesterday(): string {
   return d.toISOString().split('T')[0]
 }
 
+function getPreviousWorkday(): string {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  if (d.getDay() === 0) d.setDate(d.getDate() - 1)
+  if (d.getDay() === 6) d.setDate(d.getDate() - 1)
+  return d.toISOString().split('T')[0]
+}
+
 function formatDate(dateStr: string): string {
   const [year, month, day] = dateStr.split('-')
   const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -62,35 +70,38 @@ export default function CruceGPS() {
   const [selectedUser, setSelectedUser] = useState<CruceUser | null>(null)
 
   useEffect(() => {
-  const CACHE_KEY = 'cruce_gps_cache'
-  const date = getYesterday()
+    const CACHE_KEY = 'cruce_gps_cache'
 
-  getCruceGPS(date)
-    .then((res) => {
-      if (res.success) {
-        setData(res.data)
-        localStorage.setItem(CACHE_KEY, JSON.stringify(res.data))
-      } else {
-        // API falló, intentar cargar caché
+    getCruceGPS(getYesterday())
+      .then((res) => {
+        if (res.success && res.data?.total_calls === 0) {
+          return getCruceGPS(getPreviousWorkday())
+        }
+        return res
+      })
+      .then((res) => {
+        if (res.success) {
+          setData(res.data)
+          localStorage.setItem(CACHE_KEY, JSON.stringify(res.data))
+        } else {
+          const cached = localStorage.getItem(CACHE_KEY)
+          if (cached) {
+            setData(JSON.parse(cached))
+          } else {
+            setError(res.error?.message || 'Error al cargar datos')
+          }
+        }
+      })
+      .catch(() => {
         const cached = localStorage.getItem(CACHE_KEY)
         if (cached) {
           setData(JSON.parse(cached))
         } else {
-          setError(res.error?.message || 'Error al cargar datos')
+          setError('No se pudo conectar con la API')
         }
-      }
-    })
-    .catch(() => {
-      // Conexión falló, intentar cargar caché
-      const cached = localStorage.getItem(CACHE_KEY)
-      if (cached) {
-        setData(JSON.parse(cached))
-      } else {
-        setError('No se pudo conectar con la API')
-      }
-    })
-    .finally(() => setLoading(false))
-}, [])
+      })
+      .finally(() => setLoading(false))
+  }, [])
 
   return (
     <div style={{

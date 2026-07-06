@@ -112,6 +112,7 @@ function App() {
     const fallidas = registros.filter(p => p['Estatus'] === 'Fallida').length
     const tasa = registros.length > 0 ? Math.round((exitosas / registros.length) * 100) : 0
     const pais = registros[0]?.['Pais'] || '—'
+    const usuarioRadio = registros[0]?.['Usuario Radio'] || '—'
     const porDia: Record<string, number> = {}
     registros.forEach(p => {
       const f = p['Fecha']
@@ -125,7 +126,8 @@ function App() {
       maxPorDia, diasActivos,
       fechaInicio: fechas[0] || '—',
       fechaUltima: fechas[fechas.length - 1] || '—',
-      registros
+      registros,
+      usuarioRadio
     }
   }
 
@@ -411,9 +413,14 @@ function App() {
                   <div style={{ fontSize: '11px', color: '#C8102E', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '4px' }}>
                     Perfil de técnico
                   </div>
-                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '34px', color: '#1A1816', lineHeight: 1, marginBottom: '8px' }}>
-                    {selectedTecnico}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '34px', color: '#1A1816', lineHeight: 1 }}>
+                      {selectedTecnico}
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#C8102E', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                      {stats2.usuarioRadio}
                   </div>
+                </div>
                   <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '12px', color: '#635F5A', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#C8102E', display: 'inline-block' }} />
